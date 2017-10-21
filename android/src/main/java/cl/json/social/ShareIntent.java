@@ -21,7 +21,7 @@ public abstract class ShareIntent {
 
     protected final ReactApplicationContext reactContext;
     protected Intent intent;
-    protected String chooserTitle = "Share";
+    protected String defaultChooserTitle = "Share";
     public ShareIntent(ReactApplicationContext reactContext) {
         this.reactContext = reactContext;
         this.setIntent(new Intent(android.content.Intent.ACTION_SEND));
@@ -71,10 +71,18 @@ public abstract class ShareIntent {
             throw new RuntimeException("URLEncoder.encode() failed for " + param);
         }
     }
-    protected void openIntentChooser() throws ActivityNotFoundException {
+    protected void openIntentChooser(ReadableMap options) throws ActivityNotFoundException {
         System.out.println(this.getIntent());
         System.out.println(this.getIntent().getExtras());
-        Intent chooser = Intent.createChooser(this.getIntent(), this.chooserTitle);
+
+        Intent chooser;
+        
+        if (ShareIntent.hasValidKey(options.getString("intentTitle"), options)) {
+            chooser = Intent.createChooser(this.getIntent(), options.getString("intentTitle"));
+        } else {
+            chooser = Intent.createChooser(this.getIntent(), this.defaultChooserTitle);
+        }
+
         chooser.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         this.reactContext.startActivity(chooser);
     }
